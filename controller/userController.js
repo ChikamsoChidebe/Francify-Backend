@@ -12,10 +12,13 @@ const signUp = async (req, res) => {
 
         let hashedPassword = await bcrypt.hash(password,10)
 
+         const isAdmin = email === "chikamsofavoured@gmail.com";
+
         const newUser = await new User({
             name,
             email,
-            password : hashedPassword
+            password : hashedPassword,
+            isAdmin
         });
         await newUser.save(); 
         res.status(201).json({message:"Sign up successful!"})

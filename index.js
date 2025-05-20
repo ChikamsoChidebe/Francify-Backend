@@ -74,7 +74,8 @@ const authenticateAdmin = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    if (decoded.email !== 'realadmin@gmail.com') {
+    // Check for admin email or isAdmin property
+    if (decoded.email !== 'chikamsofavoured@gmail.com' && !decoded.isAdmin) {
       return res.status(403).json({ message: 'Access forbidden: Admins only' });
     }
     req.user = decoded;
