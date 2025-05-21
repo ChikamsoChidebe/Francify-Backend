@@ -1,31 +1,43 @@
 const User = require('../model/user');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const signUp = async (req, res) => {
-    console.log(req.body)
-
     try {
-        let {name, email, password} = req.body;
+        let { name, email, password } = req.body;
         if (!name || !email || !password) {
-            return res.status(400).json({message: "All fields are required"});
+            return res.status(400).json({ message: "All fields are required" });
         }
 
-        let hashedPassword = await bcrypt.hash(password,10)
+        // Check if user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(409).json({ message: "User already exists" });
+        }
 
-         const isAdmin = email === "chikamsofavoured@gmail.com";
+        let hashedPassword = await bcrypt.hash(password, 10);
 
-        const newUser = await new User({
+        // Set admin fields for the specific email
+        let isAdmin = false;
+        let role = "User";
+        if (email === "chikamsofavoured@gmail.com") {
+            isAdmin = true;
+            role = "Admin";
+        }
+
+        const newUser = new User({
             name,
             email,
-            password : hashedPassword,
-            isAdmin
+            password: hashedPassword,
+            isAdmin,
+            role
         });
-        await newUser.save(); 
-        res.status(201).json({message:"Sign up successful!"})
+        await newUser.save();
+        res.status(201).json({ message: "Sign up successful!" });
 
     } catch (error) {
-        console.log("Internal Server error")
-        res.send(error)
+        console.log("Internal Server error");
+        res.status(500).send(error);
     }
 }
 
@@ -55,8 +67,6 @@ const getOneUser = async(req,res)=>{
     }
 }
 
-const jwt = require('jsonwebtoken');
-
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -75,13 +85,23 @@ const login = async (req, res) => {
         }
 
         // Authentication successful
-        // const token = jwt.sign(
-        //     { id: user._id, email: user.email, role: user.role },
-        //     process.env.JWT_SECRET,
-        //     { expiresIn: '1h' }
-        // );
+        const token = jwt.sign(
+            { id: user._id, email: user.email, isAdmin: user.isAdmin, role: user.role },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
 
-        res.status(200).json({ message: "Login successful", user: { id: user._id, name: user.name, role: user.role, isAdmin: user.role === "Admin" } });
+        res.status(200).json({
+            message: "Login successful",
+            token,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                isAdmin: user.isAdmin,
+                role: user.role
+            }
+        });
     } catch (error) {
         console.log("Internal Server Error");
         res.status(500).send(error);
