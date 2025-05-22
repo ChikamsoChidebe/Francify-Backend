@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 const { signUp, login, getProfile, getUsers } = require('./controller/userController');
 const profileRoute = require('./routes/profileRoute');
 const port = process.env.PORT || 4000;
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.SECRETKEY || '1A2B3C4D5E6F';
 
 app.use(cors({
     origin: ['http://localhost:5173', 'https://francify-online-store.vercel.app'],

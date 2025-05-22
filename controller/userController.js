@@ -2,6 +2,8 @@ const User = require('../model/user');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+const JWT_SECRET = process.env.SECRETKEY || '1A2B3C4D5E6F';
+
 const signUp = async (req, res) => {
     try {
         let { name, email, password } = req.body;
@@ -87,7 +89,7 @@ const login = async (req, res) => {
         // Authentication successful
         const token = jwt.sign(
             { id: user._id, email: user.email, isAdmin: user.isAdmin, role: user.role },
-            process.env.JWT_SECRET,
+            JWT_SECRET,
             { expiresIn: '1h' }
         );
 
@@ -103,8 +105,8 @@ const login = async (req, res) => {
             }
         });
     } catch (error) {
-        console.log("Internal Server Error");
-        res.status(500).send(error);
+        console.error("Login error:", error); // This prints the full error object
+        res.status(500).json({ message: error.message || "Internal Server Error" });
     }
 };
 
