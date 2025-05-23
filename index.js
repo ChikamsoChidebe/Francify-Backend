@@ -5,7 +5,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
-const { signUp, login, getProfile, getUsers } = require('./controller/userController');
+const { signUp, login, getProfile, getUsers, updateProfile } = require('./controller/userController');
 const profileRoute = require('./routes/profileRoute');
 const port = process.env.PORT || 4000;
 const JWT_SECRET = process.env.SECRETKEY || '1A2B3C4D5E6F';
@@ -37,27 +37,10 @@ app.post('/signup',signUp);
 app.post('/login', login);
 
 // Modified /profile route to use authentication middleware and pass user id to getProfile
-const authenticateUser = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) return res.status(401).json({ message: 'Authorization header missing' });
+const authenticateUser = require('./middleware/auth');
 
-  const token = authHeader.split(' ')[1];
-  if (!token) return res.status(401).json({ message: 'Token missing' });
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (error) {
-    return res.status(401).json({ message: 'Invalid or expired token' });
-  }
-};
-
-app.get('/profile', authenticateUser, (req, res) => {
-  // Pass user id from token to getProfile controller
-  req.params.id = req.user.id;
-  getProfile(req, res);
-});
+app.get('/profile', authenticateUser, getProfile);
+app.put('/profile', authenticateUser, updateProfile); // replace updateProfile with your actual handler
 
 app.get('/users', getUsers);
 

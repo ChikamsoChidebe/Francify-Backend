@@ -2,24 +2,25 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../model/user'); // Adjust path as needed
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.SECRETKEY || '1A2B3C4D5E6F';
+const authenticateUser = require('../middleware/auth'); // or wherever your auth middleware is
 
 // Middleware to authenticate user by token
-const authenticateUser = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) return res.status(401).json({ message: 'Authorization header missing' });
+// const authenticateUser = async (req, res, next) => {
+//   const authHeader = req.headers.authorization;
+//   if (!authHeader) return res.status(401).json({ message: 'Authorization header missing' });
 
-  const token = authHeader.split(' ')[1];
-  if (!token) return res.status(401).json({ message: 'Token missing' });
+//   const token = authHeader.split(' ')[1];
+//   if (!token) return res.status(401).json({ message: 'Token missing' });
 
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (error) {
-    return res.status(401).json({ message: 'Invalid or expired token' });
-  }
-};
+//   try {
+//     const decoded = jwt.verify(token, JWT_SECRET);
+//     req.user = decoded;
+//     next();
+//   } catch (error) {
+//     return res.status(401).json({ message: 'Invalid or expired token' });
+//   }
+// };
 
 // PUT /profile - update user profile
 router.put('/profile', authenticateUser, async (req, res) => {
